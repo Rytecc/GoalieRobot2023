@@ -3,6 +3,12 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Solenoid;
 
+/*
+ * Author: Lucas Soliman
+ * Date Created: May 5, 2023
+ * 
+ * This class encapsulates functions to help with using the solenoids and buttons associated 
+ */
 public class ButtonPistonAct {
     private final int BUTTON_BIND;
     private final Joystick JOYSTICK;
