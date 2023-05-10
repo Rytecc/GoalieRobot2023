@@ -21,6 +21,7 @@ public class Robot extends TimedRobot {
   public ButtonPistonAction[] FlipPistonActions = null;
 
   private RoboRIOAddressableLED laserEyes;
+  private LimelightDevice limelightCamera;
   private RobotDrive mainDriver;
 
   private long lastCooldownTime;
@@ -70,7 +71,15 @@ public class Robot extends TimedRobot {
   }
 
   private void cameraGoalie() {
+    double[] data = limelightCamera.getLimelightCurrentData();
+    boolean isLeft = data[0] < 0;
+    boolean isRight = data[0] > 0;
 
+    boolean isAbove = data[1] > 0;
+    boolean isBelow = data[1] < 0;
+
+    System.out.println("{" + isLeft + ":" + isRight + "}");
+    System.out.println("{" + isAbove + ":" + isBelow + "}");
   }
 
   private void laserEyes() {

@@ -1,0 +1,25 @@
+package frc.robot;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+public class LimelightDevice {
+    private NetworkTable mainTable;
+
+    public LimelightDevice() {
+        mainTable = NetworkTableInstance.getDefault().getTable("limelight");
+    }
+
+    /*
+     * 0 = x
+     * 1 = y
+     * 2 = area
+     */
+    public double[] getLimelightCurrentData() {
+        return new double[] {
+            mainTable.getEntry("tx").getDouble(0),
+            mainTable.getEntry("ty").getDouble(0),
+            mainTable.getEntry("ta").getDouble(0)
+        };
+    }
+}
