@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
@@ -22,6 +23,6 @@ public class RobotDrive {
     }
 
     public void runDrive() {
-        driveInstance.arcadeDrive(kDriveX.get(), kDriveY.get());
+        driveInstance.arcadeDrive(kMainController.getX() * kDriveSpeed, kMainController.getY() * kDriveSpeed);
     }
 }

@@ -12,36 +12,28 @@ import edu.wpi.first.wpilibj.Solenoid;
 public class ButtonPistonAction {
     private final int BUTTON_BIND;
     private final Joystick JOYSTICK;
-    private final Solenoid SOLENOID1;
-    private final Solenoid SOLENOID2;
-    private final boolean SOLENOID_TARGET_STATE;
+    private final Solenoid SOLENOID;
 
-    public ButtonPistonAction(Joystick js, int button, Solenoid s1, Solenoid s2, boolean s1ClosedState) {
+    public ButtonPistonAction(Joystick js, int button, Solenoid s) {
         BUTTON_BIND = button;
         JOYSTICK = js;
-        SOLENOID1 = s1;
-        SOLENOID2 = s2;
-
-        SOLENOID_TARGET_STATE = s1ClosedState;
-        reset();
+        SOLENOID = s;
+        setOff();
     }
 
     public boolean buttonPressed() {
-        return JOYSTICK.getRawButton(BUTTON_BIND);
+        return JOYSTICK.getRawButtonPressed(BUTTON_BIND);
     }
 
     public void toggle() {
-        SOLENOID1.set(!SOLENOID1.get());
-        SOLENOID2.set(!SOLENOID2.get());
+        SOLENOID.set(!SOLENOID.get());
     }
 
-    public void reset() {
-        SOLENOID1.set(SOLENOID_TARGET_STATE);
-        SOLENOID2.set(!SOLENOID_TARGET_STATE);
+    public void setOff() {
+        SOLENOID.set(false);
     }
 
-    public void runAction() {
-        SOLENOID1.set(!SOLENOID_TARGET_STATE);
-        SOLENOID1.set(SOLENOID_TARGET_STATE);
+    public void setOn() {
+        SOLENOID.set(true);
     }
 }

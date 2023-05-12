@@ -25,14 +25,18 @@ public class Constants {
         return kMainController.getY();
     };
 
-    public static final double kTimeoutSeconds = 1.0;
-    public static final int kButton1 = 1;
-    public static final int kButton2 = 2;
-    public static final int kButton3 = 3;
-    public static final int kButton4 = 4;
-    public static final int kButton5 = 5;
+    public static final double kTimeoutSeconds = 0.1;
+    public static final int kButton1 = 7;
+    public static final int kButton2 = 8;
+    public static final int kButton3 = 9;
+    public static final int kButton4 = 10;
+    public static final int kButton5 = 11;
+    public static final int kButton6 = 12;
     
-    public static final int kAutoSwitch = 6;
-    public static final int kFlipManualSwitch = 7;
-    public static final int kToggleLaserEyes = 8;
+    public static final int kAutoSwitch = 3;
+    public static final int kFlipManualSwitch = 5;
+    public static final int kToggleLaserEyes = 6;
+
+    /* CODE ROBOT PARAMETER CONSTANTS */
+    public static final double kDriveSpeed = 0.6;
 }

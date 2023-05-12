@@ -10,7 +10,7 @@ public class LimelightDevice {
         mainTable = NetworkTableInstance.getDefault().getTable("limelight");
     }
 
-    /*
+    /**
      * 0 = x
      * 1 = y
      * 2 = area
