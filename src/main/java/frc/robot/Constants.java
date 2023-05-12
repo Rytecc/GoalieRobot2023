@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 public class Constants {
     /* DASHBOARD CONSTANTS */
-    public static final String kDashboardManualACtionAllowed = "Manual Cooldown State";
+    public static final String kDashboardManualActionAllowed = "Manual Cooldown State";
 
     /* ROBORIO PORT CONSTANTS */
     public static final int kDriveTopLeft = 0;
@@ -18,11 +18,13 @@ public class Constants {
     public static final Joystick kMainController = new Joystick(0);
 
     public static final Supplier<Double> kDriveX = () -> {
-        return kMainController.getX();
+        double absAxis = Math.abs(kMainController.getX());
+        return absAxis > 0.075 ? kMainController.getX() : 0;
     };
 
     public static final Supplier<Double> kDriveY = () -> {
-        return kMainController.getY();
+        double absAxis = Math.abs(kMainController.getY());
+        return absAxis > 0.075 ? kMainController.getY() : 0;
     };
 
     public static final double kTimeoutSeconds = 0.1;
