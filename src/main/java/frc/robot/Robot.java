@@ -30,7 +30,7 @@ public class Robot extends TimedRobot {
     actionPerformed = false;
     lightsToggled = false;
 
-    mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight);
+    //mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight);
     //laserEyes = new RoboRIOAddressableLED(kLaserEyePWMPort, 2); //uncomment to enable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
@@ -45,13 +45,13 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    //laserEyes(); uncomment to enable laser eyes //uncomment to enable laser eyes
+    //laserEyes(); //uncomment to enable laser eyes
   }
 
   @Override
   public void teleopPeriodic() {
     manualGoalie();
-    mainDriver.runDrive();
+    //mainDriver.runDrive();
   }
 
   /* Unused Functions As of First Iteration of Testing Commit
@@ -78,25 +78,11 @@ public class Robot extends TimedRobot {
   */
 
   private void manualGoalie() {
-    if(actionPerformed) {
-      long timeDiff = System.currentTimeMillis() - lastCooldownTime;
-
-      if(timeDiff > Constants.kTimeoutSeconds * 1000) {
-        SmartDashboard.putString(kDashboardManualActionAllowed, "READY");
-        actionPerformed = false;
-      }
-
-      return;
-    }
-
     for(ButtonPistonAction action : PistonActions) {
       if(action.buttonPressed()) {
-        action.toggle();
-
-        System.out.println("WAITING: " + Constants.kTimeoutSeconds + "s");
-        lastCooldownTime = System.currentTimeMillis();
-        actionPerformed = true;
-        break;
+        action.setOn();
+      } else {
+        action.setOff();
       }
     }
   }

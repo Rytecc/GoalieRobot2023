@@ -22,7 +22,7 @@ public class ButtonPistonAction {
     }
 
     public boolean buttonPressed() {
-        return JOYSTICK.getRawButtonPressed(BUTTON_BIND);
+        return JOYSTICK.getRawButton(BUTTON_BIND);
     }
 
     public void toggle() {
