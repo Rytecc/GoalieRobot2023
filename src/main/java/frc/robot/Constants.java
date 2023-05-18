@@ -5,7 +5,8 @@ import edu.wpi.first.wpilibj.Joystick;
 
 public class Constants {
     /* DASHBOARD CONSTANTS */
-    public static final String kDashboardManualActionAllowed = "Manual Cooldown State";
+    public static final String kDashboardIsManualFlipped = "Solenoid Inputs Flipped:";
+    public static final String kDashboardIsAutoSwitchOn = "Limelight Auto Mode State:";
 
     /* ROBORIO PORT CONSTANTS */
     public static final int kDriveTopLeft = 0;
@@ -28,17 +29,16 @@ public class Constants {
     };
 
     public static final double kTimeoutSeconds = 0.1;
-    public static final int kButton1 = 7;
-    public static final int kButton2 = 8;
-    public static final int kButton3 = 9;
-    public static final int kButton4 = 10;
-    public static final int kButton5 = 11;
-    public static final int kButton6 = 12;
+    public static final int kButton1 = 1;
+    public static final int kButton2 = 2;
+    public static final int kButton3 = 3;
+    public static final int kButton4 = 4;
+    public static final int kButton5 = 6;
     
-    public static final int kAutoSwitch = 3;
-    public static final int kFlipManualSwitch = 5;
-    public static final int kToggleLaserEyes = 6;
+    public static final int kAutoSwitch = 7;
+    public static final int kFlipManualSwitch = 8;
+    public static final int kToggleLaserEyes = 5;
 
-    /* CODE ROBOT PARAMETER CONSTANTS */
-    public static final double kDriveSpeed = 0.6;
+    /* CODE ROBOT PARAMETER CONSTANTS*/
+    public static final double kDriveSpeed = 0.5;
 }

@@ -20,17 +20,15 @@ public class Robot extends TimedRobot {
   private LimelightDevice limelightCamera;
   private RobotDrive mainDriver;
 
-  private long lastCooldownTime;
   private boolean actionPerformed;
   private boolean lightsToggled;
 
   @Override
   public void robotInit() {
-    lastCooldownTime = 0;
     actionPerformed = false;
     lightsToggled = false;
 
-    //mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight);
+    //mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight); //uncomment to enable driving
     //laserEyes = new RoboRIOAddressableLED(kLaserEyePWMPort, 2); //uncomment to enable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
@@ -38,23 +36,33 @@ public class Robot extends TimedRobot {
       new ButtonPistonAction(kMainController, Constants.kButton2, new Solenoid(PneumaticsModuleType.CTREPCM, 1)),
       new ButtonPistonAction(kMainController, Constants.kButton3, new Solenoid(PneumaticsModuleType.CTREPCM, 2)),
       new ButtonPistonAction(kMainController, Constants.kButton4, new Solenoid(PneumaticsModuleType.CTREPCM, 3)),
-      new ButtonPistonAction(kMainController, Constants.kButton5, new Solenoid(PneumaticsModuleType.CTREPCM, 4)),
-      new ButtonPistonAction(kMainController, Constants.kButton6, new Solenoid(PneumaticsModuleType.CTREPCM, 5)),
+      new ButtonPistonAction(kMainController, Constants.kButton5, new Solenoid(PneumaticsModuleType.CTREPCM, 4))
+    };
+
+    FlipPistonActions = new ButtonPistonAction[] {
+      new ButtonPistonAction(kMainController, Constants.kButton5, new Solenoid(PneumaticsModuleType.CTREPCM, 0)),
+      new ButtonPistonAction(kMainController, Constants.kButton4, new Solenoid(PneumaticsModuleType.CTREPCM, 1)),
+      new ButtonPistonAction(kMainController, Constants.kButton3, new Solenoid(PneumaticsModuleType.CTREPCM, 2)),
+      new ButtonPistonAction(kMainController, Constants.kButton2, new Solenoid(PneumaticsModuleType.CTREPCM, 3)),
+      new ButtonPistonAction(kMainController, Constants.kButton1, new Solenoid(PneumaticsModuleType.CTREPCM, 4))
     };
   }
 
   @Override
   public void robotPeriodic() {
     //laserEyes(); //uncomment to enable laser eyes
+
+    SmartDashboard.putBoolean(kDashboardIsAutoSwitchOn, kMainController.getRawButton(kAutoSwitch));
+    SmartDashboard.putBoolean(kDashboardIsManualFlipped, kMainController.getRawButton(kFlipManualSwitch));
   }
 
   @Override
   public void teleopPeriodic() {
     manualGoalie();
-    //mainDriver.runDrive();
+    //mainDriver.runDrive(); //uncomment to enable driving
   }
 
-  /* Unused Functions As of First Iteration of Testing Commit
+  /** Uncomment to enable auto goalie
   private void cameraGoalie() {
     double[] data = limelightCamera.getLimelightCurrentData();
     boolean isLeft = data[0] < 0;
@@ -66,7 +74,9 @@ public class Robot extends TimedRobot {
     System.out.println("{" + isLeft + ":" + isRight + "}");
     System.out.println("{" + isAbove + ":" + isBelow + "}");
   }
+  */
 
+  /** Uncomment to enable laser eyes
   private void laserEyes() {
     if(kMainController.getRawButtonPressed(kToggleLaserEyes)) {
       lightsToggled = !lightsToggled;
@@ -78,7 +88,7 @@ public class Robot extends TimedRobot {
   */
 
   private void manualGoalie() {
-    for(ButtonPistonAction action : PistonActions) {
+    for(ButtonPistonAction action : kMainController.getRawButton(kFlipManualSwitch) ? FlipPistonActions : PistonActions) {
       if(action.buttonPressed()) {
         action.setOn();
       } else {
