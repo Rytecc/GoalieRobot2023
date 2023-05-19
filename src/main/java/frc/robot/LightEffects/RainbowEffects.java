@@ -1,6 +1,8 @@
+package frc.robot.LightEffects;
+
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
-public class RainbowEffects {
+public class RainbowEffects implements LightEffect {
     private AddressableLEDBuffer buffer;
     private int rainbowFirstPixelHue;
 
@@ -15,6 +17,7 @@ public class RainbowEffects {
         rainbowFirstPixelHue = 0;
     }
 
+    @Override
     public AddressableLEDBuffer tick() {
         for (var i = start; i < end; i++) {
             int hue = (rainbowFirstPixelHue + (i * 180 / buffer.getLength())) % 180;
