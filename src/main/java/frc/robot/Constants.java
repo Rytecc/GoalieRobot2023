@@ -2,7 +2,6 @@ package frc.robot;
 
 import java.util.function.Supplier;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 
@@ -30,6 +29,7 @@ public class Constants {
     };
     /* MANUAL INPUT CONSTANTS */
     public static final Joystick kMainController = new Joystick(0);
+    public static final Joystick kCoController = new Joystick(1);
 
     public static final Supplier<Double> kDriveX = () -> {
         double absAxis = Math.abs(kMainController.getX());

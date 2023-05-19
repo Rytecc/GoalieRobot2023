@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,20 +15,14 @@ public class Robot extends TimedRobot {
   public ButtonPistonAction[] PistonActions = null;
   public ButtonPistonAction[] FlipPistonActions = null;
 
-  private RoboRIOAddressableLED laserEyes;
+  private LaserEyes laserEyes;
   private LimelightDevice limelightCamera;
   private RobotDrive mainDriver;
 
-  private boolean actionPerformed;
-  private boolean lightsToggled;
-
   @Override
   public void robotInit() {
-    actionPerformed = false;
-    lightsToggled = false;
-
-    mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight); //uncomment to enable driving
-    //laserEyes = new RoboRIOAddressableLED(kLaserEyePWMPort, 2); //uncomment to enable laser eyes
+    mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight); //comment to disable driving
+    laserEyes = new LaserEyes(kCoController, 0, 2); //comment to disable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
       new ButtonPistonAction(kMainController, Constants.kButton1, kLeftKicker),
@@ -50,7 +43,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    laserEyes();
+    laserEyes.tickEyes(); //comment to disable laser eyes
     SmartDashboard.putBoolean(kDashboardIsAutoSwitchOn, kMainController.getRawButton(kAutoSwitch));
     SmartDashboard.putBoolean(kDashboardIsManualFlipped, kMainController.getRawButton(kFlipManualSwitch));
   }
@@ -63,9 +56,10 @@ public class Robot extends TimedRobot {
       manualGoalie();
     }
 
-    mainDriver.runDrive(); //uncomment to enable driving
+    mainDriver.runDrive(); //comment to disable driving
   }
 
+  //TODO: TEST THIS FUNCTION
   private void cameraGoalie() {
     double[] data = limelightCamera.getLimelightCurrentData();
     boolean isLeft = data[0] < 0;
@@ -77,35 +71,28 @@ public class Robot extends TimedRobot {
     System.out.println("{" + isLeft + ":" + isRight + "}");
     System.out.println("{" + isAbove + ":" + isBelow + "}");
 
-    disableAllSolenoid();
-
     if(isLeft) {
       if(isAbove) {
+        disableAllSolenoid(kLeftArm);
         kLeftArm.set(true);
       }
 
       if(isBelow) {
+        disableAllSolenoid(kLeftKicker);
         kLeftKicker.set(true);
       }
 
     } else if(isRight) {
       if(isAbove) {
+        disableAllSolenoid(kRightArm);
         kRightArm.set(true);
       }
 
       if(isBelow) {
+        disableAllSolenoid(kRightKicker);
         kRightKicker.set(true);
       }
     }
-  }
-
-  private void laserEyes() {
-    if(kMainController.getRawButtonPressed(kToggleLaserEyes)) {
-      lightsToggled = !lightsToggled;
-      return;
-    }
-
-    laserEyes.setBufferToColor(lightsToggled ? 1.0 : 0.0, 0.0, 0.0);
   }
 
   private void manualGoalie() {
@@ -118,8 +105,12 @@ public class Robot extends TimedRobot {
     }
   }
 
-  private void disableAllSolenoid() {
+  private void disableAllSolenoid(Solenoid omit) {
     for(Solenoid s : kSolenoids) {
+      if(s == omit) {
+        continue;
+      }
+
       s.set(false);
     }
   }
