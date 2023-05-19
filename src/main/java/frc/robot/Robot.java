@@ -50,8 +50,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    //laserEyes(); //uncomment to enable laser eyes
-
+    laserEyes();
     SmartDashboard.putBoolean(kDashboardIsAutoSwitchOn, kMainController.getRawButton(kAutoSwitch));
     SmartDashboard.putBoolean(kDashboardIsManualFlipped, kMainController.getRawButton(kFlipManualSwitch));
   }
@@ -100,7 +99,6 @@ public class Robot extends TimedRobot {
     }
   }
 
-  /** Uncomment to enable laser eyes
   private void laserEyes() {
     if(kMainController.getRawButtonPressed(kToggleLaserEyes)) {
       lightsToggled = !lightsToggled;
@@ -109,7 +107,6 @@ public class Robot extends TimedRobot {
 
     laserEyes.setBufferToColor(lightsToggled ? 1.0 : 0.0, 0.0, 0.0);
   }
-  */
 
   private void manualGoalie() {
     for(ButtonPistonAction action : kMainController.getRawButton(kFlipManualSwitch) ? FlipPistonActions : PistonActions) {
