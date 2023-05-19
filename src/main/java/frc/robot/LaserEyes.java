@@ -23,9 +23,10 @@ public class LaserEyes {
         eyesControllerJoystick = lightController;
         eyesLED = new AddressableLED(lightPort);
         eyesBuffer = new AddressableLEDBuffer(eyesCount);
-
+        eyesLED.setLength(eyesCount);
+        
         lightEffects = new HashMap<>();
-        lightEffects.put(8, new RainbowEffects(eyesBuffer, 0, 2));
+        lightEffects.put(8, new RainbowEffects(eyesBuffer, 0, 1));
         lightEffects.put(9, new SetColor(eyesBuffer, 255, 0, 0));
         lightEffects.put(10, new SetColor(eyesBuffer, 0, 255, 0));
         lightEffects.put(11, new SetColor(eyesBuffer, 0, 0, 0));
@@ -37,10 +38,10 @@ public class LaserEyes {
         for(Integer key : lightEffects.keySet()) {
             if(eyesControllerJoystick.getRawButtonPressed(key)) {
                 currentEffect = lightEffects.get(key);
+                System.out.println(currentEffect.getClass().getTypeName());
             }
         }
-        
-        AddressableLEDBuffer buffer = currentEffect.tick();
-        eyesLED.setData(buffer);
+
+        eyesLED.setData(currentEffect.tick());
     }
 }

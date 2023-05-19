@@ -22,7 +22,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight); //comment to disable driving
-    laserEyes = new LaserEyes(kCoController, 0, 2); //comment to disable laser eyes
+    laserEyes = new LaserEyes(kCoController, 4, 2); //comment to disable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
       new ButtonPistonAction(kMainController, Constants.kButton1, kLeftKicker),
