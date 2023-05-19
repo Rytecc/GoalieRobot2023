@@ -28,23 +28,23 @@ public class Robot extends TimedRobot {
     actionPerformed = false;
     lightsToggled = false;
 
-    //mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight); //uncomment to enable driving
+    mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight); //uncomment to enable driving
     //laserEyes = new RoboRIOAddressableLED(kLaserEyePWMPort, 2); //uncomment to enable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
-      new ButtonPistonAction(kMainController, Constants.kButton1, new Solenoid(PneumaticsModuleType.CTREPCM, 0)),
-      new ButtonPistonAction(kMainController, Constants.kButton2, new Solenoid(PneumaticsModuleType.CTREPCM, 1)),
-      new ButtonPistonAction(kMainController, Constants.kButton3, new Solenoid(PneumaticsModuleType.CTREPCM, 2)),
-      new ButtonPistonAction(kMainController, Constants.kButton4, new Solenoid(PneumaticsModuleType.CTREPCM, 3)),
-      new ButtonPistonAction(kMainController, Constants.kButton5, new Solenoid(PneumaticsModuleType.CTREPCM, 4))
+      new ButtonPistonAction(kMainController, Constants.kButton1, kLeftKicker),
+      new ButtonPistonAction(kMainController, Constants.kButton2, kLeftArm),
+      new ButtonPistonAction(kMainController, Constants.kButton3, kRightKicker),
+      new ButtonPistonAction(kMainController, Constants.kButton4, kRightArm),
+      new ButtonPistonAction(kMainController, Constants.kButton5, kHead)
     };
 
     FlipPistonActions = new ButtonPistonAction[] {
-      new ButtonPistonAction(kMainController, Constants.kButton5, new Solenoid(PneumaticsModuleType.CTREPCM, 0)),
-      new ButtonPistonAction(kMainController, Constants.kButton4, new Solenoid(PneumaticsModuleType.CTREPCM, 1)),
-      new ButtonPistonAction(kMainController, Constants.kButton3, new Solenoid(PneumaticsModuleType.CTREPCM, 2)),
-      new ButtonPistonAction(kMainController, Constants.kButton2, new Solenoid(PneumaticsModuleType.CTREPCM, 3)),
-      new ButtonPistonAction(kMainController, Constants.kButton1, new Solenoid(PneumaticsModuleType.CTREPCM, 4))
+      new ButtonPistonAction(kMainController, Constants.kButton3, kLeftKicker),
+      new ButtonPistonAction(kMainController, Constants.kButton4, kLeftArm),
+      new ButtonPistonAction(kMainController, Constants.kButton1, kRightKicker),
+      new ButtonPistonAction(kMainController, Constants.kButton2, kRightArm),
+      new ButtonPistonAction(kMainController, Constants.kButton5, kHead)
     };
   }
 
@@ -58,11 +58,15 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    manualGoalie();
-    //mainDriver.runDrive(); //uncomment to enable driving
+    if(kMainController.getRawButton(kAutoSwitch)) {
+      cameraGoalie();
+    } else {
+      manualGoalie();
+    }
+
+    mainDriver.runDrive(); //uncomment to enable driving
   }
 
-  /** Uncomment to enable auto goalie
   private void cameraGoalie() {
     double[] data = limelightCamera.getLimelightCurrentData();
     boolean isLeft = data[0] < 0;
@@ -73,8 +77,28 @@ public class Robot extends TimedRobot {
 
     System.out.println("{" + isLeft + ":" + isRight + "}");
     System.out.println("{" + isAbove + ":" + isBelow + "}");
+
+    disableAllSolenoid();
+
+    if(isLeft) {
+      if(isAbove) {
+        kLeftArm.set(true);
+      }
+
+      if(isBelow) {
+        kLeftKicker.set(true);
+      }
+
+    } else if(isRight) {
+      if(isAbove) {
+        kRightArm.set(true);
+      }
+
+      if(isBelow) {
+        kRightKicker.set(true);
+      }
+    }
   }
-  */
 
   /** Uncomment to enable laser eyes
   private void laserEyes() {
@@ -94,6 +118,12 @@ public class Robot extends TimedRobot {
       } else {
         action.setOff();
       }
+    }
+  }
+
+  private void disableAllSolenoid() {
+    for(Solenoid s : kSolenoids) {
+      s.set(false);
     }
   }
 }

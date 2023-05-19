@@ -2,6 +2,9 @@ package frc.robot;
 
 import java.util.function.Supplier;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 
 public class Constants {
     /* DASHBOARD CONSTANTS */
@@ -15,6 +18,16 @@ public class Constants {
     public static final int kDriveBottomRight = 3;
     public static final int kLaserEyePWMPort = 4;
 
+    /* SOLENOID IDs ARE SET UP TO WHERE GOALIE IS VIEWED ON BACKSIDE */
+    public static final Solenoid kHead = new Solenoid(PneumaticsModuleType.CTREPCM, 3);
+    public static final Solenoid kLeftArm = new Solenoid(PneumaticsModuleType.CTREPCM, 5);
+    public static final Solenoid kRightArm = new Solenoid(PneumaticsModuleType.CTREPCM, 4);
+    public static final Solenoid kRightKicker = new Solenoid(PneumaticsModuleType.CTREPCM, 1);
+    public static final Solenoid kLeftKicker = new Solenoid(PneumaticsModuleType.CTREPCM, 2);
+
+    public static final Solenoid[] kSolenoids = new Solenoid[] {
+        kHead, kLeftArm, kRightArm, kLeftKicker, kRightKicker
+    };
     /* MANUAL INPUT CONSTANTS */
     public static final Joystick kMainController = new Joystick(0);
 
