@@ -12,7 +12,7 @@ public class SwapEffect implements LightEffect{
 
     private boolean firstCycle;
 
-    public FlashEffect(AddressableLEDBuffer targetbuffer, int r1, int g1, int b1, int r2, int g2, int b2, double swaptime) {
+    public SwapEffect(AddressableLEDBuffer targetbuffer, int r1, int g1, int b1, int r2, int g2, int b2, double swaptime) {
           buffer = targetbuffer;
           
           this.r1 = r1;
