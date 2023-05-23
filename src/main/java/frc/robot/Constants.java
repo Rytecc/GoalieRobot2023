@@ -1,9 +1,13 @@
 package frc.robot;
 
 import java.util.function.Supplier;
+
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.XboxController;
 
 public class Constants {
     /* DASHBOARD CONSTANTS */
@@ -24,12 +28,15 @@ public class Constants {
     public static final Solenoid kRightKicker = new Solenoid(PneumaticsModuleType.CTREPCM, 1);
     public static final Solenoid kLeftKicker = new Solenoid(PneumaticsModuleType.CTREPCM, 2);
 
+    public static final PneumaticsControlModule kModule = new PneumaticsControlModule(0);
+    public static final Compressor kCompressor = new Compressor(PneumaticsModuleType.CTREPCM);
+
     public static final Solenoid[] kSolenoids = new Solenoid[] {
         kHead, kLeftArm, kRightArm, kLeftKicker, kRightKicker
     };
     /* MANUAL INPUT CONSTANTS */
     public static final Joystick kMainController = new Joystick(0);
-    public static final Joystick kCoController = new Joystick(1);
+    public static final XboxController kSideController = new XboxController(1);
 
     public static final Supplier<Double> kDriveX = () -> {
         double absAxis = Math.abs(kMainController.getX());
@@ -53,5 +60,5 @@ public class Constants {
     public static final int kToggleLaserEyes = 5;
 
     /* CODE ROBOT PARAMETER CONSTANTS*/
-    public static final double kDriveSpeed = 0.5;
+    public static final double kDriveSpeed = 0.65;
 }

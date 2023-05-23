@@ -15,14 +15,17 @@ public class Robot extends TimedRobot {
   public ButtonPistonAction[] PistonActions = null;
   public ButtonPistonAction[] FlipPistonActions = null;
 
+  private final boolean debugLimeLight = true;
+
   private LaserEyes laserEyes;
   private LimelightDevice limelightCamera;
   private RobotDrive mainDriver;
 
   @Override
   public void robotInit() {
+    limelightCamera = new LimelightDevice();
     mainDriver = new RobotDrive(kDriveTopLeft, kDriveBottomLeft, kDriveTopRight, kDriveBottomRight); //comment to disable driving
-    laserEyes = new LaserEyes(kCoController, 4, 2); //comment to disable laser eyes
+    //laserEyes = new LaserEyes(kCoController, 4, 2); //comment to disable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
       new ButtonPistonAction(kMainController, Constants.kButton1, kLeftKicker),
@@ -43,13 +46,21 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    laserEyes.tickEyes(); //comment to disable laser eyes
+    //laserEyes.tickEyes(); //comment to disable laser eyes
     SmartDashboard.putBoolean(kDashboardIsAutoSwitchOn, kMainController.getRawButton(kAutoSwitch));
     SmartDashboard.putBoolean(kDashboardIsManualFlipped, kMainController.getRawButton(kFlipManualSwitch));
   }
 
   @Override
   public void teleopPeriodic() {
+    if(!kCompressor.getPressureSwitchValue()) {
+      System.out.println("Compressor on");
+      kCompressor.enableDigital();
+    } else {
+      System.out.println("Compressor off");
+      kCompressor.disable();
+    }
+
     if(kMainController.getRawButton(kAutoSwitch)) {
       cameraGoalie();
     } else {
@@ -62,15 +73,19 @@ public class Robot extends TimedRobot {
   //TODO: TEST THIS FUNCTION
   private void cameraGoalie() {
     double[] data = limelightCamera.getLimelightCurrentData();
+
+    if(debugLimeLight) {
+      SmartDashboard.putNumber("LimeLight X: ", data[0]);
+      SmartDashboard.putNumber("LimeLight Y: ", data[1]);
+      SmartDashboard.putNumber("Limelight A: ", data[2]);
+    }
+
     boolean isLeft = data[0] < 0;
     boolean isRight = data[0] > 0;
 
     boolean isAbove = data[1] > 0;
     boolean isBelow = data[1] < 0;
-
-    System.out.println("{" + isLeft + ":" + isRight + "}");
-    System.out.println("{" + isAbove + ":" + isBelow + "}");
-
+    
     if(isLeft) {
       if(isAbove) {
         disableAllSolenoid(kLeftArm);
