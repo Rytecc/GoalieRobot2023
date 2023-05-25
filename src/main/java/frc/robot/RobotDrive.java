@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import static frc.robot.Constants.*;
 
+import java.util.function.Supplier;
+
 /*
  * Author: Lucas Soliman
  * Date Created: May 9, 2023
@@ -12,16 +14,14 @@ import static frc.robot.Constants.*;
  * This class contains functionality for robot driving
  */
 public class RobotDrive {
-    private final DifferentialDrive driveInstance;
-
-    public RobotDrive(int tl, int bl, int tr, int br) {
-        MotorControllerGroup leftGroup = new MotorControllerGroup(new PWMSparkMax(tl), new PWMSparkMax(bl));
-        MotorControllerGroup rightGroup = new MotorControllerGroup(new PWMSparkMax(tr), new PWMSparkMax(br));
-
-        driveInstance = new DifferentialDrive(leftGroup, rightGroup);
+    
+    private Supplier<Double> driveX, driveY;
+    public RobotDrive(Supplier<Double> driveX, Supplier<Double> driveY) {
+        this.driveX = driveX;
+        this.driveY = driveY;
     }
 
     public void runDrive() {
-        driveInstance.arcadeDrive(kDriveX.get() * kDriveSpeed, kDriveY.get() * kDriveSpeed);
+        driveInstance.arcadeDrive(driveX.get() * kDriveSpeed, driveY.get() * kDriveSpeed);
     }
 }

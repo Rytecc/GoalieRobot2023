@@ -5,9 +5,11 @@ import java.util.HashMap;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Joystick;
+import frc.robot.LightEffects.FlashEffect;
 import frc.robot.LightEffects.LightEffect;
 import frc.robot.LightEffects.RainbowEffects;
 import frc.robot.LightEffects.SetColor;
+import frc.robot.LightEffects.SwapEffect;
 
 //TODO: TEST THIS IMPLEMENTATION
 public class LaserEyes {
@@ -26,12 +28,12 @@ public class LaserEyes {
         eyesLED.setLength(eyesCount);
         
         lightEffects = new HashMap<>();
-        lightEffects.put(8, new RainbowEffects(eyesBuffer, 0, 1));
+        lightEffects.put(8, new RainbowEffects(eyesBuffer, 0, 2));
         lightEffects.put(9, new SetColor(eyesBuffer, 255, 0, 0));
-        lightEffects.put(10, new SetColor(eyesBuffer, 0, 255, 0));
-        lightEffects.put(11, new SetColor(eyesBuffer, 0, 0, 0));
-
+        lightEffects.put(10, new FlashEffect(eyesBuffer, 255, 0, 0, 0, 255, 0, 0.1));
+        lightEffects.put(11, new SwapEffect(eyesBuffer, 0, 0, 255, 255, 0, 0, 0.25));
         currentEffect = lightEffects.get(8);
+        eyesLED.start();
     }
 
     public void tickEyes() {

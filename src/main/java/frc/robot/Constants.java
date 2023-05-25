@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public class Constants {
     /* DASHBOARD CONSTANTS */
@@ -36,7 +39,7 @@ public class Constants {
     };
     /* MANUAL INPUT CONSTANTS */
     public static final Joystick kMainController = new Joystick(0);
-    public static final XboxController kSideController = new XboxController(1);
+    public static final Joystick kSideController = new Joystick(1);
 
     public static final Supplier<Double> kDriveX = () -> {
         double absAxis = Math.abs(kMainController.getX());
@@ -57,8 +60,11 @@ public class Constants {
     
     public static final int kAutoSwitch = 7;
     public static final int kFlipManualSwitch = 8;
-    public static final int kToggleLaserEyes = 5;
+    public static final int kReadyAutoSwitch = 5;
 
     /* CODE ROBOT PARAMETER CONSTANTS*/
     public static final double kDriveSpeed = 0.65;
+    public static final MotorControllerGroup leftGroup = new MotorControllerGroup(new PWMSparkMax(kDriveTopLeft), new PWMSparkMax(kDriveBottomLeft));
+    public static final MotorControllerGroup rightGroup = new MotorControllerGroup(new PWMSparkMax(kDriveTopRight), new PWMSparkMax(kDriveBottomRight));
+    public static final DifferentialDrive driveInstance = new DifferentialDrive(leftGroup, rightGroup);
 }
