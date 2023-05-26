@@ -39,7 +39,7 @@ public class Constants {
     };
     /* MANUAL INPUT CONSTANTS */
     public static final Joystick kMainController = new Joystick(0);
-    public static final Joystick kSideController = new Joystick(1);
+    public static final XboxController kSideController = new XboxController(1);
 
     public static final Supplier<Double> kDriveX = () -> {
         double absAxis = Math.abs(kMainController.getX());
@@ -63,7 +63,8 @@ public class Constants {
     public static final int kReadyAutoSwitch = 5;
 
     /* CODE ROBOT PARAMETER CONSTANTS*/
-    public static final double kDriveSpeed = 0.65;
+    public static final double kDriveSpeed = 0.8;
+    public static final double kCreepDriveSpeed = 0.65;
     public static final MotorControllerGroup leftGroup = new MotorControllerGroup(new PWMSparkMax(kDriveTopLeft), new PWMSparkMax(kDriveBottomLeft));
     public static final MotorControllerGroup rightGroup = new MotorControllerGroup(new PWMSparkMax(kDriveTopRight), new PWMSparkMax(kDriveBottomRight));
     public static final DifferentialDrive driveInstance = new DifferentialDrive(leftGroup, rightGroup);

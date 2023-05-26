@@ -26,8 +26,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     limelightCamera = new LimelightDevice();
-    mainDriver = new RobotDrive(() -> { return kMainController.getY(); }, () -> { return kMainController.getX(); }); //comment to disable driving
-    //coDriver = new RobotDrive(() -> {return kSideController.getX();}, () -> {return kSideController.getY();});
+    mainDriver = new RobotDrive(() -> { return kMainController.getY(); }, () -> { return kMainController.getX(); }, kCreepDriveSpeed); //comment to disable driving
+    coDriver = new RobotDrive(() -> {return kSideController.getLeftY();}, () -> {return kSideController.getRightX();}, kDriveSpeed);
     laserEyes = new LaserEyes(kSideController, 4, 2); //comment to disable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
@@ -75,13 +75,12 @@ public class Robot extends TimedRobot {
       } else {
         disableAllSolenoid(null);
       }
-
     } else {
       manualGoalie();
     }
 
     mainDriver.runDrive(); //comment to disable driving
-    //coDriver.runDrive(); //comment to disable copilot driving
+    coDriver.runDrive(); //comment to disable copilot driving
   }
 
   //TODO: REFINE THIS FUNCTION!
