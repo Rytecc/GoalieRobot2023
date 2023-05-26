@@ -45,4 +45,11 @@ public class LaserEyes {
 
         eyesLED.setData(currentEffect.tick());
     }
+    public void setColor(int r, int g, int b){
+        for(int i = 0; i < eyesBuffer.getLength(); i++) {
+            eyesBuffer.setRGB(i, r, g, b);
+        }
+
+        eyesLED.setData(eyesBuffer);
+    }
 }
