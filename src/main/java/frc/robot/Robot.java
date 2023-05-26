@@ -20,16 +20,24 @@ public class Robot extends TimedRobot {
 
   private LaserEyes laserEyes;
   private LimelightDevice limelightCamera;
-  private RobotDrive mainDriver;
   private RobotDrive coDriver;
   private boolean autoReady = false;
   private int autoTimeout = 0;
 
+  private int autoDriveTime = 0;
+  private double autoDriveDirection = 0;
+
   @Override
   public void robotInit() {
     limelightCamera = new LimelightDevice();
-    mainDriver = new RobotDrive(() -> { return kMainController.getY(); }, () -> { return kMainController.getX(); }); //comment to disable driving
-    //coDriver = new RobotDrive(() -> {return kSideController.getX();}, () -> {return kSideController.getY();});
+    coDriver = new RobotDrive(() -> {
+      double x = kSideController.getRawAxis(0);
+      return Math.abs(x) > 0.075 ? x : 0;
+    }, () -> {
+      double y = kSideController.getRawAxis(4);
+      return Math.abs(y) > 0.075 ? -y : 0;
+    }, kCoDriveSpeed);
+
     laserEyes = new LaserEyes(kSideController, 4, 2); //comment to disable laser eyes
 
     PistonActions = new ButtonPistonAction[] {
@@ -80,19 +88,34 @@ public class Robot extends TimedRobot {
         if(autoTimeout <= 0) {
           disableAllSolenoid(null);
         }
+
+        if(autoDriveTime > 0) {
+          autoDriveTime--;
+        } else {
+          autoDriveDirection = 0;
+        }
       }
 
+      coDriver.drive(0, autoDriveDirection);
     } else {
       autoReady = false;
       autoTimeout = 0;
       manualGoalie();
-    }
 
-    mainDriver.runDrive(); //comment to disable driving
-    //coDriver.runDrive(); //comment to disable copilot driving
+      coDriver.runDrive(); //comment to disable copilot driving
+    }
   }
 
   //TODO: REFINE THIS FUNCTION!
+  //When puck is ~11.75 feet away
+  private final double detectionX = 10; // How many units off of the x-axis (both directions) do we react to a puck
+  private final double detectionY = 4; // How many units off of the y-axis do we react to a puck
+
+  private final double deadZoneX = 2; // How many units off of the x axis (both direction) do we not react to a puck when in detectionX
+  private final double deadZoneYTop = -12; // How many units off of the midpoint of artificial rectangle (up/down) do we not react to a puck when in detectionY
+  private final double deadZoneYBottom = -14;
+  private final double detectionArea = 0.01;
+  /*Old Goalie Logic #2b
   private final double areaThreshold = 0.01;
 
   private final double actionBoxWidth = 16.8;
@@ -120,8 +143,9 @@ public class Robot extends TimedRobot {
   private final double rightArmRectW = 9;
   private final double rightArmRectH = 8;
   private final Rect rightArmRect = new Rect(rightBoundX - rightArmRectW, upperBoundY - rightArmRectH, rightArmRectW, rightArmRectH);
+  */
 
-  /*
+  /** Old Goalie Logic #2a
   private final Vector leftKickerPadding = new Vector(boxPaddingX, boxPaddingY);
   private final Vector rightKickerPadding = new Vector(boxPaddingX, boxPaddingY);
   private final Vector leftArmPadding = new Vector(boxPaddingX, boxPaddingY);
@@ -145,6 +169,79 @@ public class Robot extends TimedRobot {
 
     double xP = data[0];
     double yP = data[1];
+
+    if(data[2] < detectionArea) {
+      return;
+    }
+    
+    //Is the object outside of the x Bounds?
+    if(xP < -detectionX && xP > detectionX) {
+      return;
+    }
+
+    //Is the object above the y detection bound?
+    if(yP > detectionY) {
+      return;
+    }
+
+    //Is the point within the center deadzone X?
+    if(xP > -deadZoneX && xP < deadZoneX) {
+      return;
+    }
+
+    //Is the point within the center deadzone Y?
+    if(yP < deadZoneYTop && yP > deadZoneYBottom) {
+      return;
+    }
+
+    //Is the point in the right arm zone?
+    if(xP < -deadZoneX && yP > deadZoneYTop) {
+      SmartDashboard.putString("Current Commit Place: ", "Left Arm");
+      disableAllSolenoid(kLeftArm);
+      kLeftArm.set(true);
+      autoDriveTime = 15;
+      autoDriveDirection = 1;
+      autoActed = true;
+    }
+
+    //Is the point in the right kicker zone?
+    if(xP < -deadZoneX && yP < deadZoneYBottom) {
+      SmartDashboard.putString("Current Commit Place: ", "Left Kicker");
+      disableAllSolenoid(kLeftKicker);
+      kLeftKicker.set(true);
+      autoDriveTime = 15;
+      autoDriveDirection = 1;
+      autoActed = true;
+    }
+
+    //Is the point in the left arm zone?
+    if(xP > deadZoneX && yP > deadZoneYTop) {
+      SmartDashboard.putString("Current Commit Place: ", "Right Arm");
+      disableAllSolenoid(kRightArm);
+      kRightArm.set(true);
+      autoDriveTime = 15;
+      autoDriveDirection = -1;
+      autoActed = true;
+    }
+
+    //Is the point in the left kicker zone?
+    if(xP > deadZoneX && yP < deadZoneYBottom) {
+      SmartDashboard.putString("Current Commit Place: ", "Right Kicker");
+      disableAllSolenoid(kRightKicker);
+      kRightKicker.set(true);
+      autoDriveTime = 15;
+      autoDriveDirection = -1;
+      autoActed = true;
+    }
+
+    if(autoActed) {
+      autoTimeout = 150;
+      autoReady = false;
+    } else {
+      SmartDashboard.putString("Current Commit Place: ", "Deadzone");
+    }
+
+    /** Old goalie logic #2
     boolean isInActionRect = actionBoxRect.pointInRect(xP, yP);
     boolean isInLeftKickerRect = leftKickerRect.pointInRect(xP, yP);
     boolean isInRightKickerRect = rightKickerRect.pointInRect(xP, yP);
@@ -182,11 +279,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putString("Current Commit Place: ", "Deadzone");
       }
     }
-
-    if(autoActed) {
-      autoTimeout = 150;
-      autoReady = false;
-    }
+    */
 
     /** Old goalie logic
     boolean isLeft = data[0] < 0;
@@ -233,6 +326,14 @@ public class Robot extends TimedRobot {
       }
 
       s.set(false);
+    }
+  }
+
+  public void delay(int timeMillis) {
+    try {
+      Thread.sleep(timeMillis);
+    } catch(Exception e) {
+      return;
     }
   }
 }
