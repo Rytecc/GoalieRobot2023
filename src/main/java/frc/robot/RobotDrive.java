@@ -16,12 +16,14 @@ import java.util.function.Supplier;
 public class RobotDrive {
     
     private Supplier<Double> driveX, driveY;
-    public RobotDrive(Supplier<Double> driveX, Supplier<Double> driveY) {
+    private final double driveSpeed;
+    public RobotDrive(Supplier<Double> driveX, Supplier<Double> driveY, double driveSpeed) {
         this.driveX = driveX;
         this.driveY = driveY;
+        this.driveSpeed = driveSpeed;
     }
 
     public void runDrive() {
-        driveInstance.arcadeDrive(driveX.get() * kDriveSpeed, driveY.get() * kDriveSpeed);
+        driveInstance.arcadeDrive(driveX.get() * driveSpeed, driveY.get() * driveSpeed);
     }
 }
