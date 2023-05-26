@@ -27,6 +27,8 @@ public class Robot extends TimedRobot {
   private int autoDriveTime = 0;
   private double autoDriveDirection = 0;
 
+  private boolean autoEyesOverride = false;
+
   @Override
   public void robotInit() {
     limelightCamera = new LimelightDevice();
@@ -59,7 +61,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    if(autoEyesOverride == false){
     laserEyes.tickEyes(); //comment to disable laser eyes
+    }
     SmartDashboard.putBoolean(kDashboardIsAutoSwitchOn, kMainController.getRawButton(kAutoSwitch));
     SmartDashboard.putBoolean(kDashboardIsManualFlipped, kMainController.getRawButton(kFlipManualSwitch));
   }
@@ -87,6 +91,7 @@ public class Robot extends TimedRobot {
 
         if(autoTimeout <= 0) {
           disableAllSolenoid(null);
+          autoEyesOverride = false;
         }
 
         if(autoDriveTime > 0) {
@@ -202,6 +207,9 @@ public class Robot extends TimedRobot {
       autoDriveTime = 15;
       autoDriveDirection = 1;
       autoActed = true;
+
+      laserEyes.setColor(255, 0, 0);
+      autoEyesOverride = true;
     }
 
     //Is the point in the right kicker zone?
@@ -212,6 +220,9 @@ public class Robot extends TimedRobot {
       autoDriveTime = 15;
       autoDriveDirection = 1;
       autoActed = true;
+      
+      laserEyes.setColor(255, 0, 0);
+      autoEyesOverride = true;
     }
 
     //Is the point in the left arm zone?
@@ -222,6 +233,9 @@ public class Robot extends TimedRobot {
       autoDriveTime = 15;
       autoDriveDirection = -1;
       autoActed = true;
+
+      laserEyes.setColor(255, 0, 0);
+      autoEyesOverride = true;
     }
 
     //Is the point in the left kicker zone?
@@ -232,6 +246,9 @@ public class Robot extends TimedRobot {
       autoDriveTime = 15;
       autoDriveDirection = -1;
       autoActed = true;
+
+      laserEyes.setColor(255, 0, 0);
+      autoEyesOverride = true;
     }
 
     if(autoActed) {
