@@ -10,6 +10,10 @@ public class LimelightDevice {
         mainTable = NetworkTableInstance.getDefault().getTable("limelight");
     }
 
+    public void setCameraLightState(boolean on) {
+        mainTable.getEntry("ledMode").setNumber(on ? 3 : 1);
+    }
+
     /**
      * 0 = x
      * 1 = y

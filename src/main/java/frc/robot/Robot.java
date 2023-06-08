@@ -20,7 +20,7 @@ public class Robot extends TimedRobot {
 
   private LaserEyes laserEyes;
   private LimelightDevice limelightCamera;
-  private RobotDrive coDriver;
+  private RobotDrive mainDriver;
   private boolean autoReady = false;
   private int autoTimeout = 0;
 
@@ -32,12 +32,35 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     limelightCamera = new LimelightDevice();
-    coDriver = new RobotDrive(() -> {
-      double x = kSideController.getRawAxis(0);
+
+    mainDriver = new RobotDrive(() -> {
+      double mainX = kMainController.getY();
+      mainX = Math.abs(mainX) > 0.075 ? mainX : 0;
+      if(mainX != 0) {
+        return -mainX;
+      }
+
+      double x = kSideController.getRawAxis(4);
       return Math.abs(x) > 0.075 ? x : 0;
     }, () -> {
-      double y = kSideController.getRawAxis(4);
-      return Math.abs(y) > 0.075 ? -y : 0;
+      double mainY = kMainController.getX();
+
+      if(kMainController.getRawButton(kFlipManualSwitch)) {
+        mainY *= -1;
+      }
+
+      mainY = Math.abs(mainY) > 0.075 ? -mainY : 0;
+      if(mainY != 0) {
+        return -mainY;
+      }
+
+      double y = kSideController.getRawAxis(0);
+
+      if(kMainController.getRawButton(kFlipManualSwitch)) {
+        y *= -1;
+      }
+
+      return Math.abs(y) > 0.075 ? y : 0;
     }, kCoDriveSpeed);
 
     laserEyes = new LaserEyes(kSideController, 4, 2); //comment to disable laser eyes
@@ -62,8 +85,20 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     if(autoEyesOverride == false){
-    laserEyes.tickEyes(); //comment to disable laser eyes
+      laserEyes.tickEyes(); // comment to disable laser eyes
+    } else {
+      //TODO: Test that eye color is correct
+      laserEyes.setColor(0, 255, 0);
     }
+
+    /*
+    if(kSideController.getRawButtonPressed(6)) {
+      limelightCamera.setCameraLightState(true);
+    } else if(kSideController.getRawButtonPressed(5)) {
+      limelightCamera.setCameraLightState(false);
+    }
+    */
+
     SmartDashboard.putBoolean(kDashboardIsAutoSwitchOn, kMainController.getRawButton(kAutoSwitch));
     SmartDashboard.putBoolean(kDashboardIsManualFlipped, kMainController.getRawButton(kFlipManualSwitch));
   }
@@ -77,13 +112,33 @@ public class Robot extends TimedRobot {
     }
 
     if(kMainController.getRawButton(kAutoSwitch)) {
+      double[] data = limelightCamera.getLimelightCurrentData();
       if(kMainController.getRawButtonPressed(kReadyAutoSwitch) && autoTimeout <= 0) {
         disableAllSolenoid(null);
         autoReady = true;
       }
 
+      //If the readySwitch is being held, have the robot autoRotate to align with the puck.
+      if(kMainController.getRawButton(kReadyAutoSwitch)) {
+        System.out.println("Auto aligning...");
+
+        //TODO: TEST AUTO ALIGN CODE BELOW
+        double xP = data[0];
+        double absX = Math.abs(xP);
+        if(absX > deadZoneX + 0.5) {
+          double power = 0.55;
+          if(absX > deadZoneX + 1.0) { power = 0.75; }
+          mainDriver.drive(Math.signum(xP) * power, 0f);
+        } else {
+          mainDriver.drive(0f, 0f);
+        }
+
+        //Return out of the function so the alignment does not conflict with the goalie actions.
+        return;
+      }
+
       if(autoReady) {
-        cameraGoalie();
+        cameraGoalie(data);
       } else {
         if(autoTimeout > 0) {
           autoTimeout--; 
@@ -101,25 +156,24 @@ public class Robot extends TimedRobot {
         }
       }
 
-      coDriver.drive(0, autoDriveDirection);
+      mainDriver.drive(0, autoDriveDirection);
     } else {
       autoReady = false;
       autoTimeout = 0;
-      manualGoalie();
 
-      coDriver.runDrive(); //comment to disable copilot driving
+      manualGoalie();
+      mainDriver.runDrive(); //comment to disable copilot driving
     }
   }
 
-  //TODO: REFINE THIS FUNCTION!
   //When puck is ~11.75 feet away
-  private final double detectionX = 10; // How many units off of the x-axis (both directions) do we react to a puck
-  private final double detectionY = 4; // How many units off of the y-axis do we react to a puck
+  private final double detectionX = 12; // How many units off of the x-axis (both directions) do we react to a puck
+  private final double detectionY = 10; // How many units off of the y-axis do we react to a puck
 
-  private final double deadZoneX = 2; // How many units off of the x axis (both direction) do we not react to a puck when in detectionX
-  private final double deadZoneYTop = -12; // How many units off of the midpoint of artificial rectangle (up/down) do we not react to a puck when in detectionY
-  private final double deadZoneYBottom = -14;
-  private final double detectionArea = 0.01;
+  private final double deadZoneX = 3; // How many units off of the x axis (both direction) do we not react to a puck when in detectionX
+  private final double deadZoneYTop = -8; // How many units off of the midpoint of artificial rectangle (up/down) do we not react to a puck when in detectionY
+  private final double deadZoneYBottom = -12;
+  private final double detectionArea = 0.005;
   /*Old Goalie Logic #2b
   private final double areaThreshold = 0.01;
 
@@ -162,8 +216,7 @@ public class Robot extends TimedRobot {
   private final Rect rightArmRect = new Rect(rightArmPadding.x, rightArmPadding.y, 30 - rightArmPadding.x, 20 - rightArmPadding.y);
   */
   
-  private void cameraGoalie() {
-    double[] data = limelightCamera.getLimelightCurrentData();
+  private void cameraGoalie(double[] data) {
     boolean autoActed = false;
     
     if(debugLimeLight) {
@@ -207,8 +260,6 @@ public class Robot extends TimedRobot {
       autoDriveTime = 15;
       autoDriveDirection = 1;
       autoActed = true;
-
-      laserEyes.setColor(255, 0, 0);
       autoEyesOverride = true;
     }
 
@@ -220,8 +271,7 @@ public class Robot extends TimedRobot {
       autoDriveTime = 15;
       autoDriveDirection = 1;
       autoActed = true;
-      
-      laserEyes.setColor(255, 0, 0);
+
       autoEyesOverride = true;
     }
 
@@ -234,7 +284,6 @@ public class Robot extends TimedRobot {
       autoDriveDirection = -1;
       autoActed = true;
 
-      laserEyes.setColor(255, 0, 0);
       autoEyesOverride = true;
     }
 
@@ -247,7 +296,6 @@ public class Robot extends TimedRobot {
       autoDriveDirection = -1;
       autoActed = true;
 
-      laserEyes.setColor(255, 0, 0);
       autoEyesOverride = true;
     }
 
@@ -257,73 +305,6 @@ public class Robot extends TimedRobot {
     } else {
       SmartDashboard.putString("Current Commit Place: ", "Deadzone");
     }
-
-    /** Old goalie logic #2
-    boolean isInActionRect = actionBoxRect.pointInRect(xP, yP);
-    boolean isInLeftKickerRect = leftKickerRect.pointInRect(xP, yP);
-    boolean isInRightKickerRect = rightKickerRect.pointInRect(xP, yP);
-
-    boolean isInLeftArmRect = leftArmRect.pointInRect(xP, yP);
-    boolean isInRightArmRect = rightArmRect.pointInRect(xP, yP);
-
-    if(!isInActionRect) {
-      return;
-    }
-
-    if(data[2] >= areaThreshold) {
-      SmartDashboard.putString("Current Commit Place", "In Action Rect and Area");
-      if(isInLeftKickerRect) {
-        SmartDashboard.putString("Current Commit Place: ", "Left Kicker");
-        disableAllSolenoid(kLeftKicker);
-        kLeftKicker.set(true);
-        autoActed = true;
-      } else if(isInRightKickerRect) {
-        SmartDashboard.putString("Current Commit Place: ", "Right Kicker");
-        disableAllSolenoid(kRightKicker);
-        kRightKicker.set(true);
-        autoActed = true;
-      } else if(isInLeftArmRect) {
-        SmartDashboard.putString("Current Commit Place: ", "Left Arm");
-        disableAllSolenoid(kLeftArm);
-        kLeftArm.set(true);
-        autoActed = true;
-      } else if(isInRightArmRect) {
-        SmartDashboard.putString("Current Commit Place: ", "Right Arm");
-        disableAllSolenoid(kRightArm);
-        kRightArm.set(true);
-        autoActed = true;
-      } else {
-        SmartDashboard.putString("Current Commit Place: ", "Deadzone");
-      }
-    }
-    */
-
-    /** Old goalie logic
-    boolean isLeft = data[0] < 0;
-    boolean isRight = data[0] > 0;
-
-    boolean isAbove = data[1] > 0;
-    boolean isBelow = data[1] < 0;
-
-    if(isLeft) {
-      if(isAbove) {
-
-      }
-
-      if(isBelow) {
-
-      }
-
-    } else if(isRight) {
-      if(isAbove) {
-
-      }
-
-      if(isBelow) {
-
-      }
-    }
-    */
   }
 
   private void manualGoalie() {
@@ -343,14 +324,6 @@ public class Robot extends TimedRobot {
       }
 
       s.set(false);
-    }
-  }
-
-  public void delay(int timeMillis) {
-    try {
-      Thread.sleep(timeMillis);
-    } catch(Exception e) {
-      return;
     }
   }
 }

@@ -11,7 +11,6 @@ import frc.robot.LightEffects.RainbowEffects;
 import frc.robot.LightEffects.SetColor;
 import frc.robot.LightEffects.SwapEffect;
 
-//TODO: TEST THIS IMPLEMENTATION
 public class LaserEyes {
 
     private final Joystick eyesControllerJoystick;
@@ -45,6 +44,7 @@ public class LaserEyes {
 
         eyesLED.setData(currentEffect.tick());
     }
+    
     public void setColor(int r, int g, int b){
         for(int i = 0; i < eyesBuffer.getLength(); i++) {
             eyesBuffer.setRGB(i, r, g, b);
