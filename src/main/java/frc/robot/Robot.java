@@ -3,7 +3,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.util.*;
 
 import static frc.robot.Constants.*;
 /*
@@ -31,27 +30,39 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    //Create new instance of the limelight camera in order to gather x-y-a data
     limelightCamera = new LimelightDevice();
 
+    //Initialise the driver instance of the robot,
+    //The value of 0.075 is the determined deadzone of the joysticks.
     mainDriver = new RobotDrive(() -> {
+      //Return the main controller X over the Xbox Controller joystick-x
       double mainX = kMainController.getY();
       mainX = Math.abs(mainX) > 0.075 ? mainX : 0;
+      if(kMainController.getRawButton(kFlipManualSwitch)) {
+        mainX *= -1;
+      }
+
       if(mainX != 0) {
         return -mainX;
       }
 
       double x = kSideController.getRawAxis(4);
+      if(kMainController.getRawButton(kFlipManualSwitch)) {
+        x *= -1;
+      }
+
       return Math.abs(x) > 0.075 ? x : 0;
     }, () -> {
+      //Return the main controller Y over the Xbox Controller joystick-y
       double mainY = kMainController.getX();
-
       if(kMainController.getRawButton(kFlipManualSwitch)) {
         mainY *= -1;
       }
 
-      mainY = Math.abs(mainY) > 0.075 ? -mainY : 0;
+      mainY = Math.abs(mainY) > 0.075 ? mainY : 0;
       if(mainY != 0) {
-        return -mainY;
+        return mainY;
       }
 
       double y = kSideController.getRawAxis(0);
@@ -60,11 +71,12 @@ public class Robot extends TimedRobot {
         y *= -1;
       }
 
-      return Math.abs(y) > 0.075 ? y : 0;
+      return Math.abs(y) > 0.075 ? -y : 0;
     }, kCoDriveSpeed);
 
-    laserEyes = new LaserEyes(kSideController, 4, 2); //comment to disable laser eyes
+    laserEyes = new LaserEyes(kSideController, 4, 2);
 
+    //Initialize the array of button piston actions based on orientation of robot relative to observer
     PistonActions = new ButtonPistonAction[] {
       new ButtonPistonAction(kMainController, Constants.kButton1, kLeftKicker),
       new ButtonPistonAction(kMainController, Constants.kButton2, kLeftArm),
@@ -80,6 +92,9 @@ public class Robot extends TimedRobot {
       new ButtonPistonAction(kMainController, Constants.kButton2, kRightArm),
       new ButtonPistonAction(kMainController, Constants.kButton5, kHead)
     };
+
+    //Disable the limelight light on initialization
+    limelightCamera.setCameraLightState(false);
   }
 
   @Override
@@ -87,17 +102,14 @@ public class Robot extends TimedRobot {
     if(autoEyesOverride == false){
       laserEyes.tickEyes(); // comment to disable laser eyes
     } else {
-      //TODO: Test that eye color is correct
       laserEyes.setColor(0, 255, 0);
     }
 
-    /*
     if(kSideController.getRawButtonPressed(6)) {
       limelightCamera.setCameraLightState(true);
     } else if(kSideController.getRawButtonPressed(5)) {
       limelightCamera.setCameraLightState(false);
     }
-    */
 
     SmartDashboard.putBoolean(kDashboardIsAutoSwitchOn, kMainController.getRawButton(kAutoSwitch));
     SmartDashboard.putBoolean(kDashboardIsManualFlipped, kMainController.getRawButton(kFlipManualSwitch));
@@ -112,6 +124,7 @@ public class Robot extends TimedRobot {
     }
 
     if(kMainController.getRawButton(kAutoSwitch)) {
+      limelightCamera.setCameraLightState(true);
       double[] data = limelightCamera.getLimelightCurrentData();
       if(kMainController.getRawButtonPressed(kReadyAutoSwitch) && autoTimeout <= 0) {
         disableAllSolenoid(null);
@@ -120,9 +133,6 @@ public class Robot extends TimedRobot {
 
       //If the readySwitch is being held, have the robot autoRotate to align with the puck.
       if(kMainController.getRawButton(kReadyAutoSwitch)) {
-        System.out.println("Auto aligning...");
-
-        //TODO: TEST AUTO ALIGN CODE BELOW
         double xP = data[0];
         double absX = Math.abs(xP);
         if(absX > deadZoneX + 0.5) {
@@ -158,6 +168,10 @@ public class Robot extends TimedRobot {
 
       mainDriver.drive(0, autoDriveDirection);
     } else {
+      if(kMainController.getRawButtonReleased(kAutoSwitch)) {
+        limelightCamera.setCameraLightState(false);
+      }
+
       autoReady = false;
       autoTimeout = 0;
 
@@ -166,55 +180,13 @@ public class Robot extends TimedRobot {
     }
   }
 
-  //When puck is ~11.75 feet away
   private final double detectionX = 12; // How many units off of the x-axis (both directions) do we react to a puck
   private final double detectionY = 10; // How many units off of the y-axis do we react to a puck
 
-  private final double deadZoneX = 3; // How many units off of the x axis (both direction) do we not react to a puck when in detectionX
-  private final double deadZoneYTop = -8; // How many units off of the midpoint of artificial rectangle (up/down) do we not react to a puck when in detectionY
-  private final double deadZoneYBottom = -12;
-  private final double detectionArea = 0.005;
-  /*Old Goalie Logic #2b
-  private final double areaThreshold = 0.01;
-
-  private final double actionBoxWidth = 16.8;
-  private final double actionBoxHeight = 27;
-  private final Vector actionBoxDimensions = new Vector(actionBoxWidth, actionBoxHeight);
-  private final Rect actionBoxRect = new Rect(-8.8, -24, actionBoxDimensions.x, actionBoxDimensions.y);
-
-  private final double leftBoundX = -10; //-8.8
-  private final double rightBoundX = 10; //8
-  private final double upperBoundY = 3;
-  private final double lowerBoundY = -24;
-
-  private final double leftKickerRectW = 9;
-  private final double leftKickerRectH = 8;
-  private final Rect leftKickerRect = new Rect(leftBoundX, lowerBoundY, leftKickerRectW, leftKickerRectH);
-
-  private final double rightKickerRectW = 9;
-  private final double rightKickerRectH = 8;
-  private final Rect rightKickerRect = new Rect(rightBoundX - rightKickerRectW, lowerBoundY, rightKickerRectW, rightKickerRectH);
-
-  private final double leftArmRectW = 9;
-  private final double leftArmRectH = 8;
-  private final Rect leftArmRect = new Rect(leftBoundX, upperBoundY - leftArmRectH, leftArmRectW, leftArmRectH);
-  
-  private final double rightArmRectW = 9;
-  private final double rightArmRectH = 8;
-  private final Rect rightArmRect = new Rect(rightBoundX - rightArmRectW, upperBoundY - rightArmRectH, rightArmRectW, rightArmRectH);
-  */
-
-  /** Old Goalie Logic #2a
-  private final Vector leftKickerPadding = new Vector(boxPaddingX, boxPaddingY);
-  private final Vector rightKickerPadding = new Vector(boxPaddingX, boxPaddingY);
-  private final Vector leftArmPadding = new Vector(boxPaddingX, boxPaddingY);
-  private final Vector rightArmPadding = new Vector(boxPaddingX, boxPaddingY);
-
-  private final Rect leftKickerRect = new Rect(-30, -20, 30 - leftKickerPadding.x, 20 - leftKickerPadding.y);
-  private final Rect rightKickerRect = new Rect(rightKickerPadding.x, -20, 30 - rightKickerPadding.x, 20 - rightKickerPadding.y);
-  private final Rect leftArmRect = new Rect(-30, leftArmPadding.y, 30 - leftArmPadding.x, 20 - leftArmPadding.y);
-  private final Rect rightArmRect = new Rect(rightArmPadding.x, rightArmPadding.y, 30 - rightArmPadding.x, 20 - rightArmPadding.y);
-  */
+  private final double deadZoneX = 6; // How many units off of the x axis (both direction) do we not react to a puck when in detectionX
+  private final double deadZoneYTop = -8; // How many y-units off of the midpoint of artificial rectangle (up/down) do we not react to a puck when in detectionY
+  private final double deadZoneYBottom = -12; //How many y-units off the midpoint of the artificial rectangle do we not react to a puck when in detectionY (make below deadZoneYTop)
+  private final double detectionArea = 0.005; //How many area units before the robot is permitted to react to incoming pucks
   
   private void cameraGoalie(double[] data) {
     boolean autoActed = false;
@@ -257,10 +229,8 @@ public class Robot extends TimedRobot {
       SmartDashboard.putString("Current Commit Place: ", "Left Arm");
       disableAllSolenoid(kLeftArm);
       kLeftArm.set(true);
-      autoDriveTime = 15;
       autoDriveDirection = 1;
       autoActed = true;
-      autoEyesOverride = true;
     }
 
     //Is the point in the right kicker zone?
@@ -268,11 +238,8 @@ public class Robot extends TimedRobot {
       SmartDashboard.putString("Current Commit Place: ", "Left Kicker");
       disableAllSolenoid(kLeftKicker);
       kLeftKicker.set(true);
-      autoDriveTime = 15;
       autoDriveDirection = 1;
       autoActed = true;
-
-      autoEyesOverride = true;
     }
 
     //Is the point in the left arm zone?
@@ -280,11 +247,8 @@ public class Robot extends TimedRobot {
       SmartDashboard.putString("Current Commit Place: ", "Right Arm");
       disableAllSolenoid(kRightArm);
       kRightArm.set(true);
-      autoDriveTime = 15;
       autoDriveDirection = -1;
       autoActed = true;
-
-      autoEyesOverride = true;
     }
 
     //Is the point in the left kicker zone?
@@ -292,22 +256,28 @@ public class Robot extends TimedRobot {
       SmartDashboard.putString("Current Commit Place: ", "Right Kicker");
       disableAllSolenoid(kRightKicker);
       kRightKicker.set(true);
-      autoDriveTime = 15;
       autoDriveDirection = -1;
       autoActed = true;
-
-      autoEyesOverride = true;
     }
 
     if(autoActed) {
+      //Set the delay to be 3 seconds (150 20ms delays)
       autoTimeout = 150;
       autoReady = false;
+      
+      //Override the eyes to turn red,
+      //Set the driving time to be 0.3 seconds
+      autoDriveTime = 15;
+      autoEyesOverride = true;
     } else {
       SmartDashboard.putString("Current Commit Place: ", "Deadzone");
     }
   }
 
   private void manualGoalie() {
+    //Iterate over each button/piston action and check if their corresponding button is being held down.
+    //Enable the attached solenoid to the button/piston action if the corresponding button is being held.
+    //Disable the attached solenoid to the button/piston action of the corresponding button is NOT being held.
     for(ButtonPistonAction action : kMainController.getRawButton(kFlipManualSwitch) ? FlipPistonActions : PistonActions) {
       if(action.buttonPressed()) {
         action.setOn();
@@ -318,6 +288,8 @@ public class Robot extends TimedRobot {
   }
 
   private void disableAllSolenoid(Solenoid omit) {
+    //Loop over each solenoid currently allocated
+    //Disable every solenoid besides the solenoid reference passed in as 'omit'
     for(Solenoid s : kSolenoids) {
       if(s == omit) {
         continue;
